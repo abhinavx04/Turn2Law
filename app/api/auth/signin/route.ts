@@ -3,10 +3,9 @@ import { createClient } from "@supabase/supabase-js";
 import bcrypt from "bcryptjs";
 
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
-
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
