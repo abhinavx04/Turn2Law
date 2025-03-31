@@ -7,15 +7,17 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-export default function SignIn() {  // This is the missing default export React component
+export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -25,21 +27,39 @@ export default function SignIn() {  // This is the missing default export React 
 
       if (error) throw error;
 
-      // Get user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles') // Changed from 'users' to 'profiles'
-        .select('*')
-        .eq('id', data.user.id)
-        .single();
-
-      if (profileError) throw profileError;
-
-      toast.success("Welcome back!");
       router.push("/dashboard");
       router.refresh();
 
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to sign in");
+      setError(error instanceof Error ? error.message : "Failed to sign in");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignUp = async (formData: { email: string; password: string; name: string; role: string }) => {
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name,
+            role: formData.role,
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Signed up successfully!");
+      router.push("/dashboard");
+      router.refresh();
+
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to sign up");
     } finally {
       setLoading(false);
     }

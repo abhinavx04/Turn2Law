@@ -15,14 +15,15 @@ export default function SignUp() {
     role: "client" as "client" | "lawyer",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     try {
-      // Create auth user
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -31,45 +32,16 @@ export default function SignUp() {
             full_name: formData.name,
             role: formData.role,
           },
-        },
+        }
       });
 
       if (error) throw error;
 
-      if (!data.user) throw new Error("Failed to create user");
-
-      // Create profile
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{
-          id: data.user.id,
-          email: formData.email,
-          name: formData.name,
-          role: formData.role,
-        }]);
-
-      if (profileError) throw profileError;
-
-      // If user is a lawyer, create lawyer profile
-      if (formData.role === 'lawyer') {
-        const { error: lawyerProfileError } = await supabase
-          .from('lawyer_profiles')
-          .insert([{
-            id: data.user.id,
-          }]);
-
-        if (lawyerProfileError) throw lawyerProfileError;
-      }
-
-      toast.success("Account created successfully!");
-      
-      if (formData.role === 'lawyer') {
-        router.push('/dashboard/lawyer/profile');
-      } else {
-        router.push('/dashboard');
-      }
+      router.push("/sign-in");
+      toast.success("Please check your email to verify your account");
 
     } catch (error) {
+      setError(error instanceof Error ? error.message : "Failed to create account");
       toast.error(error instanceof Error ? error.message : "Failed to create account");
     } finally {
       setLoading(false);
