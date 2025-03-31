@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-export default function SignUpPage() {
+export default function SignUp() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -22,6 +22,7 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
+      // Create auth user
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -35,11 +36,13 @@ export default function SignUpPage() {
 
       if (error) throw error;
 
-      // Create user profile
+      if (!data.user) throw new Error("Failed to create user");
+
+      // Create profile
       const { error: profileError } = await supabase
-        .from('users')
+        .from('profiles')
         .insert([{
-          id: data.user!.id,
+          id: data.user.id,
           email: formData.email,
           name: formData.name,
           role: formData.role,
@@ -47,15 +50,24 @@ export default function SignUpPage() {
 
       if (profileError) throw profileError;
 
-      // If user is a lawyer, redirect to lawyer profile creation
+      // If user is a lawyer, create lawyer profile
+      if (formData.role === 'lawyer') {
+        const { error: lawyerProfileError } = await supabase
+          .from('lawyer_profiles')
+          .insert([{
+            id: data.user.id,
+          }]);
+
+        if (lawyerProfileError) throw lawyerProfileError;
+      }
+
+      toast.success("Account created successfully!");
+      
       if (formData.role === 'lawyer') {
         router.push('/dashboard/lawyer/profile');
       } else {
         router.push('/dashboard');
       }
-
-      toast.success("Account created successfully!");
-      router.refresh();
 
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Failed to create account");

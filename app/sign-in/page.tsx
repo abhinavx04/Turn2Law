@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-export default function SignInPage() {
+export default function SignIn() {  // This is the missing default export React component
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,7 @@ export default function SignInPage() {
 
       // Get user profile
       const { data: profile, error: profileError } = await supabase
-        .from('users')
+        .from('profiles') // Changed from 'users' to 'profiles'
         .select('*')
         .eq('id', data.user.id)
         .single();
