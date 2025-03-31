@@ -12,6 +12,7 @@ export default function SignUpPage() {
     email: "",
     password: "",
     name: "",
+    role: "client" as "client" | "lawyer",
   });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -21,13 +22,13 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      // Create auth user
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             full_name: formData.name,
+            role: formData.role,
           },
         },
       });
@@ -41,13 +42,19 @@ export default function SignUpPage() {
           id: data.user!.id,
           email: formData.email,
           name: formData.name,
-          created_at: new Date().toISOString(),
+          role: formData.role,
         }]);
 
       if (profileError) throw profileError;
 
-      toast.success("Account created! Signing you in...");
-      router.push("/dashboard");
+      // If user is a lawyer, redirect to lawyer profile creation
+      if (formData.role === 'lawyer') {
+        router.push('/dashboard/lawyer/profile');
+      } else {
+        router.push('/dashboard');
+      }
+
+      toast.success("Account created successfully!");
       router.refresh();
 
     } catch (error) {
@@ -89,6 +96,23 @@ export default function SignUpPage() {
             className="bg-gray-800 border-gray-700 text-white"
             required
           />
+          
+          <div className="flex space-x-4">
+            <Button
+              type="button"
+              className={`flex-1 ${formData.role === 'client' ? 'bg-teal-400' : 'bg-gray-700'}`}
+              onClick={() => setFormData(prev => ({ ...prev, role: 'client' }))}
+            >
+              Client
+            </Button>
+            <Button
+              type="button"
+              className={`flex-1 ${formData.role === 'lawyer' ? 'bg-teal-400' : 'bg-gray-700'}`}
+              onClick={() => setFormData(prev => ({ ...prev, role: 'lawyer' }))}
+            >
+              Lawyer
+            </Button>
+          </div>
           
           <Button
             type="submit"
