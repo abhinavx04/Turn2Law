@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Bell, Mail, User } from "lucide-react";
 import { supabase } from "@/lib/supabase/client"; // Updated import path
 import { LawyerRegistrationForm } from "@/components/LawyerRegistrationForm";
-import { DashboardNav } from "@/components/DashboardNav";
 import Link from "next/link";
 
 export default function DashboardClient() {

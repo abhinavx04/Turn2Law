@@ -83,3 +83,5 @@ export function AuthForm({ type }: AuthFormProps) {
     </form>
   );
 }
+
+export { useAuth };
